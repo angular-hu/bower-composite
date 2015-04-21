@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>angular-hu-composite by angular-hu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">angular-hu-composite</h1>
+      <h2 class="project-tagline">Use $http interceptors only on specific backends - httpu.composite</h2>
+      <a href="https://github.com/angular-hu/bower-composite" class="btn">View on GitHub</a>
+      <a href="https://github.com/angular-hu/bower-composite/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/angular-hu/bower-composite/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="httpucomposite" class="anchor" href="#httpucomposite" aria-hidden="true"><span class="octicon octicon-link"></span></a>httpu.composite</h2>
+
+<p>Exposes a factory that creates an <a href="https://docs.angularjs.org/api/ng/service/%24http#interceptors">interceptor</a> that groups interceptors, to be traversed for specific backends. Implements the <a href="http://en.wikipedia.org/wiki/Composite_pattern">composite pattern</a>.</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>Get it from <a href="http://bower.io/">bower</a> or directly download it.</p>
+
+<div class="highlight highlight-sh"><pre>bower install --save angular-hu-composite</pre></div>
+
+<p>Add the dependency in the HTML</p>
+
+<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">script</span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>bower_components/angular-hu-composite/composite.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
+
+<p>Add the <code>httpu.composite</code> dependency to your App Module</p>
+
+<div class="highlight highlight-js"><pre>angular.module(<span class="pl-s"><span class="pl-pds">'</span>MyApp<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>httpu.composite<span class="pl-pds">'</span></span>]);</pre></div>
+
+<p>The <code>huComposite</code> dependency is now available</p>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h3>
+
+<div class="highlight highlight-js"><pre>angular.module(<span class="pl-s"><span class="pl-pds">'</span>MyApp<span class="pl-pds">'</span></span>)
+<span class="pl-c">//Create an interceptor of interceptors</span>
+.factory(<span class="pl-s"><span class="pl-pds">'</span>myAPIInterceptors<span class="pl-pds">'</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">huComposite</span>) {
+  <span class="pl-k">return</span> huComposite([
+    <span class="pl-s"><span class="pl-pds">'</span>myOAuthInterceptor<span class="pl-pds">'</span></span>, <span class="pl-c">//you can also register interceptors via an anonymous factory</span>
+    <span class="pl-s"><span class="pl-pds">'</span>myRetryInterceptor<span class="pl-pds">'</span></span>,
+    <span class="pl-s"><span class="pl-pds">'</span>myStatisticsInterceptor<span class="pl-pds">'</span></span>
+  ], {
+    flag<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>myAPI<span class="pl-pds">'</span></span> <span class="pl-c">//these interceptors will only be called when `myAPI` property is available in the request config</span>
+  });
+})
+<span class="pl-c">// Add the new interceptor to the interceptors chain</span>
+.config(<span class="pl-k">function</span>(<span class="pl-smi">$httpProvider</span>) {
+  $httpProvider.interceptors.<span class="pl-c1">push</span>(<span class="pl-s"><span class="pl-pds">'</span>myAPIInterceptors<span class="pl-pds">'</span></span>);
+})
+<span class="pl-c">//Now, these interceptors will only be called when the request config includes a truthy value for `myAPI` parameter </span>
+.run(<span class="pl-k">function</span>(<span class="pl-smi">$http</span>) {
+  <span class="pl-c">//This request will traverse your interceptors</span>
+  $http.get(<span class="pl-s"><span class="pl-pds">'</span>http://myapi.com/things/<span class="pl-pds">'</span></span>, {
+    myAPI<span class="pl-k">:</span> {  <span class="pl-c">//Set it to `true` or to your API specific parameters managed in your interceptors</span>
+      param<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>
+    }
+  });
+
+  <span class="pl-c">//Other requests (including server templates) without myAPI param, will not traverse them</span>
+  $http.get(<span class="pl-s"><span class="pl-pds">'</span>http://lwitter.com/lweets<span class="pl-pds">'</span></span>);
+});</pre></div>
+
+<h3>
+<a id="use-cases" class="anchor" href="#use-cases" aria-hidden="true"><span class="octicon octicon-link"></span></a>Use cases</h3>
+
+<ul>
+<li>Your app access several Backends, and have some backend specific interceptors (Authorization, error management...) for each one.</li>
+<li>You have interceptors that implements some plug&amp;play feature, and belongs to a certain module.</li>
+<li>You download your templates from your server, and query a different API backend using several interceptors. </li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>LICENSE</h2>
+
+<p>The MIT License (<a href="LICENSE">MIT</a>)</p>
+
+<p>Copyright (c) 2015 Telefónica I+D - <a href="http://www.tid.es">http://www.tid.es</a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/angular-hu/bower-composite">angular-hu-composite</a> is maintained by <a href="https://github.com/angular-hu">angular-hu</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
