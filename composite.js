@@ -1,5 +1,5 @@
 /**
- * angular-hu-composite v1.1.0-alpha1
+ * angular-hu-composite v1.1.0-alpha2
  * https://github.com/angular-hu/angular-hu
  * (c) 2015 Telefónica I+D - http://www.tid.es
  * @license MIT
@@ -23,7 +23,8 @@
       var toBackend = [],
         fromBackend = [],
         configuration = angular.extend({
-          flag: null
+          flag: null,
+          backend: null
         }, options);
 
       var interceptor = {
@@ -99,7 +100,9 @@
        * @returns {boolean}
        */
       function appliesChain(config) {
-        return !configuration.flag || (config && angular.isDefined(config[configuration.flag]));
+        return (!configuration.flag && !configuration.backend) ||
+          (config && angular.isDefined(config[configuration.flag])) ||
+          (config && configuration.backend && configuration.backend.test(config.url));
       }
     };
   }
