@@ -52,23 +52,29 @@
     <span class="pl-s"><span class="pl-pds">'</span>myRetryInterceptor<span class="pl-pds">'</span></span>,
     <span class="pl-s"><span class="pl-pds">'</span>myStatisticsInterceptor<span class="pl-pds">'</span></span>
   ], {
-    flag<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>myAPI<span class="pl-pds">'</span></span> <span class="pl-c">//these interceptors will only be called when `myAPI` property is available in the request config</span>
+    <span class="pl-c">//these interceptors will only be called when `myAPI` property is available in the request config</span>
+    flag<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>myAPI<span class="pl-pds">'</span></span>
+    <span class="pl-c">//OR when the request URL satisfies the following RegExp</span>
+    backend<span class="pl-k">:</span><span class="pl-sr"> <span class="pl-pds">/</span><span class="pl-k">^</span><span class="pl-cce">\/</span>api<span class="pl-pds">/</span></span>
   });
 })
 <span class="pl-c">// Add the new interceptor to the interceptors chain</span>
 .config(<span class="pl-k">function</span>(<span class="pl-smi">$httpProvider</span>) {
   $httpProvider.interceptors.<span class="pl-c1">push</span>(<span class="pl-s"><span class="pl-pds">'</span>myAPIInterceptors<span class="pl-pds">'</span></span>);
 })
-<span class="pl-c">//Now, these interceptors will only be called when the request config includes a truthy value for `myAPI` parameter </span>
+<span class="pl-c">//Now, these interceptors will only be called when the request config includes a truthy value for `myAPI` parameter</span>
 .run(<span class="pl-k">function</span>(<span class="pl-smi">$http</span>) {
   <span class="pl-c">//This request will traverse your interceptors</span>
-  $http.get(<span class="pl-s"><span class="pl-pds">'</span>http://myapi.com/things/<span class="pl-pds">'</span></span>, {
+  $http.get(<span class="pl-s"><span class="pl-pds">'</span>/api<span class="pl-pds">'</span></span>, {
     myAPI<span class="pl-k">:</span> {  <span class="pl-c">//Set it to `true` or to your API specific parameters managed in your interceptors</span>
       param<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>value<span class="pl-pds">'</span></span>
     }
   });
 
-  <span class="pl-c">//Other requests (including server templates) without myAPI param, will not traverse them</span>
+  <span class="pl-c">//This request will traverse your interceptors,</span>
+  $http.get(<span class="pl-s"><span class="pl-pds">'</span>/api<span class="pl-pds">'</span></span>);
+
+  <span class="pl-c">//Other requests (including server templates) without myAPI param or to other backend, will not traverse them</span>
   $http.get(<span class="pl-s"><span class="pl-pds">'</span>http://lwitter.com/lweets<span class="pl-pds">'</span></span>);
 });</pre></div>
 
@@ -82,7 +88,7 @@
 <ul>
 <li>Your app access several Backends, and have some backend specific interceptors (Authorization, error management...) for each one.</li>
 <li>You have interceptors that implements some plug&amp;play feature, and belongs to a certain module.</li>
-<li>You download your templates from your server, and query a different API backend using several interceptors. </li>
+<li>You download your templates from your server, and query a different API backend using several interceptors.</li>
 </ul>
 
 <h2>
